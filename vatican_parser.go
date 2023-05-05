@@ -49,14 +49,6 @@ func main() {
         e.Request.Visit(e.Attr("href"))
     })
 
-    // c.OnHTML(".breadcrumb .breadcrumbs", func(e *colly.HTMLElement) {
-    //     path := ""
-    //     e.ForEach("a", func(_ int, el *colly.HTMLElement) {
-    //         path = filepath.Join(path, strings.TrimSpace(e.Text))
-    //     })
-    //     fmt.Println("Breadcrumbs:", path)
-    // })
-
     c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
         docUrl          := e.Request.URL.String()
         docBaseUrlExt   := path.Base(docUrl)

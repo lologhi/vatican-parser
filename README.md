@@ -1,2 +1,7 @@
 # vatican-parser
-A go written parser to retrieve all Vatican texts (cleaned up) in Markdown files
+A go written parser to retrieve all Vatican texts (cleaned up) in Markdown files.
+
+```
+go build
+./parse
+```

@@ -32,6 +32,14 @@ func main() {
         fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
     })
 
+    // Parcourir tous les papes
+    c.OnHTML("#corpo > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody", func(e *colly.HTMLElement) {
+        e.ForEach("tr td a", func(_ int, el *colly.HTMLElement) {
+            fmt.Println("Pape:", el.Text)
+            el.Request.Visit(el.Attr("href"))
+        })
+    })
+
     // Parcourir tous les types de documents
     c.OnHTML("#accordionmenu > ul > li", func(e *colly.HTMLElement) {
         //fmt.Println("Doc type:", e.ChildText("a[0]"))
@@ -70,5 +78,5 @@ func main() {
         }
     })
 
-    c.Visit("https://www.vatican.va/content/francesco/fr.html")
+    c.Visit("https://www.vatican.va/holy_father/index_fr.htm")
 }

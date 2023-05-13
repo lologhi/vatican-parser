@@ -22,6 +22,7 @@ func main() {
         EmDelimiter: "*", // default: _
     }
     converter := md.NewConverter("", true, opt)
+    converter.AddRules(getPunctuationRule())
     converter.Use(plugin.GitHubFlavored())
 
     c.OnRequest(func(r *colly.Request) {

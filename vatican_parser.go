@@ -77,6 +77,7 @@ func main() {
         }
     })
 
+    // Parse all eleven previous popes :
     c.Visit("https://www.vatican.va/holy_father/index_fr.htm")
 }
 

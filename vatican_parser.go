@@ -66,24 +66,84 @@ func main() {
 
     c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
         docUrl          := e.Request.URL.String()
-        docBaseUrlExt   := path.Base(docUrl)
-        docBaseUrl      := strings.TrimSuffix(docBaseUrlExt, filepath.Ext(docBaseUrlExt))
-        re              := regexp.MustCompile(`[0-9]{8}`)
-        dateStringInURL := re.FindString(docBaseUrl)
-        docDate, _      := time.Parse("20060102", dateStringInURL)
         docContent      := converter.Convert(e.DOM)
 
-        parts := strings.Split(path.Dir(docUrl), "/")
-        savePath := filepath.Join(parts[3],parts[5],parts[6])
-        // fmt.Println("savePath:", savePath)
-        os.MkdirAll(savePath, 0750)
-
-        fileName := colly.SanitizeFileName(docDate.Format("2006-01-02")+"_"+docBaseUrl+".md")
+        fileName := getFileName(docUrl) // 1901-06-29-en-tout-temps.md
+        filePath := getFilePath(docUrl) // leo-xiii/fr/letters/documents
+        os.MkdirAll(filePath, 0750)
         // fmt.Println("fileName: ", fileName)
-        if err := os.WriteFile(filepath.Join(savePath, fileName), []byte(docContent), 0666); err != nil {
+        if err := os.WriteFile(filepath.Join(filePath, fileName), []byte(docContent), 0666); err != nil {
             fmt.Println(err)
         }
     })
 
     c.Visit("https://www.vatican.va/holy_father/index_fr.htm")
+}
+
+var (
+    reName = regexp.MustCompile(`([0-9]{8})(.*)`)
+    // 1 : pope name and doc type (skipped as already in the path)
+    // 2 : doc date
+    // 3 : _
+    // 4 : doc name
+    reDate = regexp.MustCompile(`([0-9]{8})`)
+)
+
+func getOriginalName(url string) string {
+    // https://www.vatican.va/content/leo-xiii/la/apost_constitutions/documents/hf_l-xiii_apc_18981002_ubi-primum.html
+    // url example : https://www.vatican.va/content/leo-xiii/fr/letters/documents/hf_l-xiii_let_19010629_en-tout-temps.html
+    baseUrl   := path.Base(url) // hf_l-xiii_let_19010629_en-tout-temps.html
+    
+    return strings.TrimSuffix(baseUrl, filepath.Ext(baseUrl)) // hf_l-xiii_let_19010629_en-tout-temps
+}
+
+func getDocName(url string) string {
+    matchedName := reName.FindStringSubmatch(getOriginalName(url))
+    if (2 > len(matchedName)) {
+        return ""
+    } else {
+        return strings.Trim(matchedName[2], "-_")
+    }
+}
+
+func getDocDate(url string) string {
+    dateStringInURL := reDate.FindString(url)
+    if ("" != dateStringInURL) {
+        docDate, _ := time.Parse("20060102", dateStringInURL)
+        if ("0001-01-01" == docDate.Format("2006-01-02")) {
+            docDate, _ = time.Parse("02012006", dateStringInURL)
+        }
+        return docDate.Format("2006-01-02")
+    } else {
+        return ""
+    }
+}
+
+func getFileName(url string) string {
+    ext := ".md"
+    if (strings.Contains(url, "/la/")) {
+        ext = ".latin.md"
+    }
+
+    docName := getDocName(url)
+    docDate := getDocDate(url)
+
+    if ("" == docName && "" == docDate) {
+        return getOriginalName(url) + ext
+    }
+    if ("" == docName) {
+        return docDate + ext
+    }
+    if ("" == docDate) {
+        return docName + ext
+    }
+
+    return docDate + "-" + docName + ext
+}
+
+func getFilePath(docUrl string) string {
+    cleanedPath := strings.TrimSuffix(path.Dir(docUrl), "documents")
+    cleanedPath = strings.Replace(cleanedPath, "/fr/", "/", 1)
+    cleanedPath = strings.Replace(cleanedPath, "/la/", "/", 1)
+    return strings.TrimPrefix(cleanedPath, "https:/www.vatican.va/content/")
 }

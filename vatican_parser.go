@@ -58,6 +58,12 @@ func main() {
         e.Request.Visit(e.Attr("href"))
     })
 
+    c.OnHTML(".vaticanindex h2 a", func(e *colly.HTMLElement) {
+        if ("Latin" == e.Text) {
+            e.Request.Visit(e.Attr("href"))
+        }
+    })
+
     c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
         docUrl          := e.Request.URL.String()
         docBaseUrlExt   := path.Base(docUrl)

@@ -14,24 +14,57 @@ import (
 )
 
 func main() {
-    c := colly.NewCollector(
-        colly.AllowedDomains("vatican.va", "www.vatican.va"),
-    )
-    opt := &md.Options{
-        CodeBlockStyle: "fenced", // default: indented
-        EmDelimiter: "*", // default: _
-    }
-    converter := md.NewConverter("", true, opt)
-    converter.AddRules(getPunctuationRule())
-    converter.Use(plugin.GitHubFlavored())
+    // parsePopes()
+    parseCommissions()
+}
 
-    c.OnRequest(func(r *colly.Request) {
-        fmt.Println("Visiting", r.URL)
+func parseCommissions() {
+    c := getCollector()
+
+    // Parcourir tous les dicastères
+    c.OnHTML("#accordionmenu a" , func(e *colly.HTMLElement) {
+        fmt.Println("Dicastère:", e.Text)
+        e.Request.Visit(e.Attr("href"))
     })
 
-    c.OnError(func(r *colly.Response, err error) {
-        fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
+    // Page listant les "Documents"
+    c.OnHTML(".documenti h2 > a", func(e *colly.HTMLElement) {
+        e.Request.Visit(e.Attr("href"))
     })
+
+    // Documents en Français
+    c.OnHTML(".documento > .testo > .text > ul > li > b > a", func(e *colly.HTMLElement) {
+        // docUrl          := e.Request.URL.String()
+        fmt.Println("Document:", e.Text)
+    })
+
+    // Documents en Latin
+    c.OnHTML(".documento > .testo > .text > ul > li > a", func(e *colly.HTMLElement) {
+        if ("Latin" == e.Text) {
+            fmt.Println("Document latin:", e.Text)
+            e.Request.Visit(e.Attr("href"))
+        }
+    })
+
+    converter := getConverter()
+    c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
+        docUrl          := e.Request.URL.String()
+        docContent      := converter.Convert(e.DOM)
+
+        fileName := getFileName(docUrl) // 1901-06-29-en-tout-temps.md
+        filePath := getFilePath(docUrl) // leo-xiii/fr/letters/documents
+        os.MkdirAll(filePath, 0750)
+        // fmt.Println("fileName: ", fileName)
+        if err := os.WriteFile(filepath.Join(filePath, fileName), []byte(docContent), 0666); err != nil {
+            fmt.Println(err)
+        }
+    })
+
+    c.Visit(curie)
+}
+
+func parsePopes() {
+    c := getCollector()
 
     // Parcourir tous les papes
     c.OnHTML("#corpo > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody", func(e *colly.HTMLElement) {
@@ -64,6 +97,7 @@ func main() {
         }
     })
 
+    converter := getConverter()
     c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
         docUrl          := e.Request.URL.String()
         docContent      := converter.Convert(e.DOM)
@@ -78,7 +112,35 @@ func main() {
     })
 
     // Parse all eleven previous popes :
-    c.Visit("https://www.vatican.va/holy_father/index_fr.htm")
+    c.Visit(popes)
+}
+
+func getCollector() *colly.Collector {
+    c := colly.NewCollector(
+        colly.AllowedDomains("vatican.va", "www.vatican.va"),
+    )
+
+    c.OnRequest(func(r *colly.Request) {
+        fmt.Println("Visiting", r.URL)
+    })
+
+    c.OnError(func(r *colly.Response, err error) {
+        fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
+    })
+
+    return c
+}
+
+func getConverter() *md.Converter {
+    opt := &md.Options{
+        CodeBlockStyle: "fenced", // default: indented
+        EmDelimiter: "*", // default: _
+    }
+    converter := md.NewConverter("", true, opt)
+    converter.AddRules(getPunctuationRule())
+    converter.Use(plugin.GitHubFlavored())
+
+    return converter
 }
 
 var (
@@ -88,6 +150,8 @@ var (
     // 3 : _
     // 4 : doc name
     reDate = regexp.MustCompile(`([0-9]{8})`)
+    popes = "https://www.vatican.va/holy_father/index_fr.htm"
+    curie = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
 )
 
 func getOriginalName(url string) string {

@@ -23,7 +23,7 @@ func parseCommissions() {
 
     // Parcourir tous les dicastères
     c.OnHTML("#accordionmenu a" , func(e *colly.HTMLElement) {
-        fmt.Println("Dicastère:", e.Text)
+        // fmt.Println("Dicastère:", strings.TrimSpace(e.Text))
         e.Request.Visit(e.Attr("href"))
     })
 
@@ -33,9 +33,10 @@ func parseCommissions() {
     })
 
     // Documents en Français
-    c.OnHTML(".documento > .testo > .text > ul > li > b > a", func(e *colly.HTMLElement) {
+    c.OnHTML(".documento > .testo > .text ul > li b > a", func(e *colly.HTMLElement) {
         // docUrl          := e.Request.URL.String()
         fmt.Println("Document:", e.Text)
+        e.Request.Visit(e.Attr("href"))
     })
 
     // Documents en Latin
@@ -115,6 +116,18 @@ func parsePopes() {
     c.Visit(popes)
 }
 
+
+var (
+    reName = regexp.MustCompile(`([0-9]{8})(.*)`)
+    // 1 : pope name and doc type (skipped as already in the path)
+    // 2 : doc date
+    // 3 : _
+    // 4 : doc name
+    reDate = regexp.MustCompile(`([0-9]{8})`)
+    popes = "https://www.vatican.va/holy_father/index_fr.htm"
+    curie = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
+)
+
 func getCollector() *colly.Collector {
     c := colly.NewCollector(
         colly.AllowedDomains("vatican.va", "www.vatican.va"),
@@ -143,19 +156,7 @@ func getConverter() *md.Converter {
     return converter
 }
 
-var (
-    reName = regexp.MustCompile(`([0-9]{8})(.*)`)
-    // 1 : pope name and doc type (skipped as already in the path)
-    // 2 : doc date
-    // 3 : _
-    // 4 : doc name
-    reDate = regexp.MustCompile(`([0-9]{8})`)
-    popes = "https://www.vatican.va/holy_father/index_fr.htm"
-    curie = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
-)
-
 func getOriginalName(url string) string {
-    // https://www.vatican.va/content/leo-xiii/la/apost_constitutions/documents/hf_l-xiii_apc_18981002_ubi-primum.html
     // url example : https://www.vatican.va/content/leo-xiii/fr/letters/documents/hf_l-xiii_let_19010629_en-tout-temps.html
     baseUrl   := path.Base(url) // hf_l-xiii_let_19010629_en-tout-temps.html
     

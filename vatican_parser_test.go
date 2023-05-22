@@ -73,6 +73,13 @@ func TestGetFileNameUrl(t *testing.T) {
     if (want != msg) {
         t.Fatalf(`getFileName("%q") returned %q, want match for %#q`, url, msg, want)
     }
+
+    url = "http://www.vatican.va/roman_curia/congregations/ccdds/documents/rc_con_ccdds_doc_20190125_decreto-celebrazione-paolovi_fr.html"
+    want = "2019-01-25-decreto-celebrazione-paolovi_fr.md"
+    msg = getFileName(url)
+    if (want != msg) {
+        t.Fatalf(`getFileName("%q") returned %q, want match for %#q`, url, msg, want)
+    }
 }
 
 func TestGetFileNameWithoutDateInUrl(t *testing.T) {

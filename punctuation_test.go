@@ -68,4 +68,46 @@ func TestWithRealExamples(t *testing.T) {
     if (want != result) {
         t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
     }
+
+    source = `omniumque virorum testimonio qui vel asceseos disciplina vel sanctitate morum maxime per idem tempus floruerunt » [ [1](#_ftn1 "")]. Praeter tot`
+    want = `omniumque virorum testimonio qui vel asceseos disciplina vel sanctitate morum maxime per idem tempus floruerunt » [^1]. Praeter tot`
+    result, _ = conv.ConvertString(source)
+    if (want != result) {
+        t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
+    }
+
+    source = `[ [1](#_ftnref1 "")] Ep. Ignatianae commentationes ad P. Lud. Martin, Praep. Gen. Soc. Iesu`
+    want = `[^1]:Ep. Ignatianae commentationes ad P. Lud. Martin, Praep. Gen. Soc. Iesu`
+    result, _ = conv.ConvertString(source)
+    if (want != result) {
+        t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
+    }
+
+    source = `doctrine conciliaire sur ce point et de l'adapter avec plus de pertinence aux conditions actuelles ( [3](#3)).`
+    want = `doctrine conciliaire sur ce point et de l'adapter avec plus de pertinence aux conditions actuelles[^3].`
+    result, _ = conv.ConvertString(source)
+    if (want != result) {
+        t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
+    }
+
+    source = `(3) Cf. *Propositio* 1.`
+    want = `[^3]:Cf. *Propositio* 1.`
+    result, _ = conv.ConvertString(source)
+    if (want != result) {
+        t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
+    }
+
+    source = `Telle est notre logique » [[125]](#_ftn125 "").`
+    want = `Telle est notre logique »[^125].`
+    result, _ = conv.ConvertString(source)
+    if (want != result) {
+        t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
+    }
+    
+    source = `[[125]](#_ftnref125 "") *Collationes in Hexaemeron*, 1, 30.`
+    want = `[^125]:*Collationes in Hexaemeron*, 1, 30.`
+    result, _ = conv.ConvertString(source)
+    if (want != result) {
+        t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
+    }
 }

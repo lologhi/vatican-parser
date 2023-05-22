@@ -69,15 +69,16 @@ func TestWithRealExamples(t *testing.T) {
         t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
     }
 
-    source = `omniumque virorum testimonio qui vel asceseos disciplina vel sanctitate morum maxime per idem tempus floruerunt » [ [1](#_ftn1 "")]. Praeter tot`
-    want = `omniumque virorum testimonio qui vel asceseos disciplina vel sanctitate morum maxime per idem tempus floruerunt » [^1]. Praeter tot`
+    // https://www.vatican.va/content/pius-xi/la/apost_constitutions/documents/hf_p-xi_apc_19220725_summorum-pontificum.html
+    source  = `omniumque virorum testimonio qui vel asceseos disciplina vel sanctitate morum maxime per idem tempus floruerunt » [ [1](#_ftn1 "")]. Praeter tot`
+    want    = `omniumque virorum testimonio qui vel asceseos disciplina vel sanctitate morum maxime per idem tempus floruerunt »[^1]. Praeter tot`
     result, _ = conv.ConvertString(source)
     if (want != result) {
         t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
     }
 
     source = `[ [1](#_ftnref1 "")] Ep. Ignatianae commentationes ad P. Lud. Martin, Praep. Gen. Soc. Iesu`
-    want = `[^1]:Ep. Ignatianae commentationes ad P. Lud. Martin, Praep. Gen. Soc. Iesu`
+    want = `[^1]: Ep. Ignatianae commentationes ad P. Lud. Martin, Praep. Gen. Soc. Iesu`
     result, _ = conv.ConvertString(source)
     if (want != result) {
         t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)
@@ -105,7 +106,7 @@ func TestWithRealExamples(t *testing.T) {
     }
     
     source = `[[125]](#_ftnref125 "") *Collationes in Hexaemeron*, 1, 30.`
-    want = `[^125]:*Collationes in Hexaemeron*, 1, 30.`
+    want = `[^125]: *Collationes in Hexaemeron*, 1, 30.`
     result, _ = conv.ConvertString(source)
     if (want != result) {
         t.Fatalf(`converting "%q" returned\n %q, want match for\n %#q`, source, result, want)

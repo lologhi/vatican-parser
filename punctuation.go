@@ -1,31 +1,31 @@
 package main
 
 import (
-    "strings"
-    "regexp"
-    md "github.com/JohannesKaufmann/html-to-markdown"
-    "github.com/PuerkitoBio/goquery"
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
+	"regexp"
+	"strings"
 )
 
 func getPunctuationRule() md.Rule {
-	var footnote_4 = regexp.MustCompile(` \( \[(\d+)\]\(\#\d+\)\)`)
-	var footnote_1 = regexp.MustCompile(` \[\[(\d+)\]\]\(\#\_ftn\d+.*?\)`)
-	var footnote_1_note = regexp.MustCompile(`\[\[(\d+)\]\]\(\#\_ftnref\d+.*?\)`)
-	var footnote_1_1 = regexp.MustCompile(` \[ \[(\d+)\]\(\#\_ftn\d+.*?\)\]`)
-	var footnote_1_1_note = regexp.MustCompile(`\[ \[(\d+)\]\(\#\_ftnref\d+.*?\)\]`)
-	var footnote_2 = regexp.MustCompile(` \[(\d+)\]`)
-	var footnote_2_note = regexp.MustCompile(`\[(\d+)\] `)
-	var footnote_3 = regexp.MustCompile(` \((\d{1,3})\)`)
-	var footnote_3_note = regexp.MustCompile(`\((\d{1,3})\) `)
+	var footnote4 = regexp.MustCompile(` \( \[(\d+)]\(#\d+\)\)`)
+	var footnote1 = regexp.MustCompile(` \[\[(\d+)]]\(#_ftn\d+.*?\)`)
+	var footnote1Note = regexp.MustCompile(`\[\[(\d+)]]\(#_ftnref\d+.*?\)`)
+	var footnote11 = regexp.MustCompile(` \[ \[(\d+)]\(#_ftn\d+.*?\)]`)
+	var footnote11Note = regexp.MustCompile(`\[ \[(\d+)]\(#_ftnref\d+.*?\)]`)
+	var footnote2 = regexp.MustCompile(` \[(\d+)]`)
+	var footnote2Note = regexp.MustCompile(`\[(\d+)] `)
+	var footnote3 = regexp.MustCompile(` \((\d{1,3})\)`)
+	var footnote3Note = regexp.MustCompile(`\((\d{1,3})\) `)
 
-	var opening_parenthesis = regexp.MustCompile(`\( `)
-	var closing_parenthesis = regexp.MustCompile(` \)`)
-	var ponctuation_double = regexp.MustCompile(`(\w)([\:\;\?\!])`)
-	var ponctuation_double_simple_space = regexp.MustCompile(` ([\:\;\?\!])`)
-	var opening_guillemet = regexp.MustCompile(`«(\w)`)
-	var closing_guillemet = regexp.MustCompile(`(\w)»`)
-	var short_simple_quotes = regexp.MustCompile(`"(\w+)"`)
-	var simple_quotes = regexp.MustCompile(`"(.*?)"`)
+	var openingParenthesis = regexp.MustCompile(`\( `)
+	var closingParenthesis = regexp.MustCompile(` \)`)
+	var ponctuationDouble = regexp.MustCompile(`(\w)([:;?!])`)
+	var ponctuationDoubleSimpleSpace = regexp.MustCompile(` ([:;?!])`)
+	var openingGuillemet = regexp.MustCompile(`«(\w)`)
+	var closingGuillemet = regexp.MustCompile(`(\w)»`)
+	var shortSimpleQuotes = regexp.MustCompile(`"(\w+)"`)
+	var simpleQuotes = regexp.MustCompile(`"(.*?)"`)
 
 	var spaces = regexp.MustCompile(`\s+`)
 
@@ -37,25 +37,25 @@ func getPunctuationRule() md.Rule {
 				return md.String("")
 			}
 
-			text = footnote_4.ReplaceAllString(text, "[^$1]")
-			text = footnote_1.ReplaceAllString(text, "[^$1]")
-			text = footnote_1_note.ReplaceAllString(text, "[^$1]:")
-			text = footnote_1_1.ReplaceAllString(text, "[^$1]")
-			text = footnote_1_1_note.ReplaceAllString(text, "[^$1]:")
-			text = footnote_2.ReplaceAllString(text, "[^$1]")
-			text = footnote_2_note.ReplaceAllString(text, "[^$1]:")
-			text = footnote_3.ReplaceAllString(text, "[^$1]")
-			text = footnote_3_note.ReplaceAllString(text, "[^$1]:")
+			text = footnote4.ReplaceAllString(text, "[^$1]")
+			text = footnote1.ReplaceAllString(text, "[^$1]")
+			text = footnote1Note.ReplaceAllString(text, "[^$1]:")
+			text = footnote11.ReplaceAllString(text, "[^$1]")
+			text = footnote11Note.ReplaceAllString(text, "[^$1]:")
+			text = footnote2.ReplaceAllString(text, "[^$1]")
+			text = footnote2Note.ReplaceAllString(text, "[^$1]:")
+			text = footnote3.ReplaceAllString(text, "[^$1]")
+			text = footnote3Note.ReplaceAllString(text, "[^$1]:")
 
-			text = opening_parenthesis.ReplaceAllString(text, "(")
-			text = closing_parenthesis.ReplaceAllString(text, ")")
-			text = ponctuation_double.ReplaceAllString(text, "$1 $2")
-			text = ponctuation_double_simple_space.ReplaceAllString(text, " $1")
-			text = opening_guillemet.ReplaceAllString(text, "« $1")
-			text = closing_guillemet.ReplaceAllString(text, "$1 »")
-			text = short_simple_quotes.ReplaceAllString(text, "« $1 »")
-			text = simple_quotes.ReplaceAllString(text, "« *$1* »")
-			
+			text = openingParenthesis.ReplaceAllString(text, "(")
+			text = closingParenthesis.ReplaceAllString(text, ")")
+			text = ponctuationDouble.ReplaceAllString(text, "$1 $2")
+			text = ponctuationDoubleSimpleSpace.ReplaceAllString(text, " $1")
+			text = openingGuillemet.ReplaceAllString(text, "« $1")
+			text = closingGuillemet.ReplaceAllString(text, "$1 »")
+			text = shortSimpleQuotes.ReplaceAllString(text, "« $1 »")
+			text = simpleQuotes.ReplaceAllString(text, "« *$1* »")
+
 			text = spaces.ReplaceAllString(text, " ")
 
 			// NOTE: See the #text rule for commonmark for all the

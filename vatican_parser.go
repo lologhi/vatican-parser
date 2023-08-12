@@ -20,6 +20,7 @@ func main() {
 
 func parseCommissions() {
     c := getCollector()
+    c.AllowedDomains = []string{"vatican.va", "www.vatican.va"}
 
     // Parcourir tous les dicastères
     c.OnHTML("#accordionmenu a" , func(e *colly.HTMLElement) {
@@ -66,6 +67,7 @@ func parseCommissions() {
 
 func parsePopes() {
     c := getCollector()
+    c.AllowedDomains = []string{"vatican.va", "www.vatican.va"}
 
     // Parcourir tous les papes
     c.OnHTML("#corpo > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody", func(e *colly.HTMLElement) {
@@ -129,9 +131,7 @@ var (
 )
 
 func getCollector() *colly.Collector {
-    c := colly.NewCollector(
-        colly.AllowedDomains("vatican.va", "www.vatican.va"),
-    )
+    c := colly.NewCollector()
 
     c.OnRequest(func(r *colly.Request) {
         fmt.Println("Visiting", r.URL)

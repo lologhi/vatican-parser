@@ -1,16 +1,16 @@
 package main
 
 import (
-    "os"
-    "fmt"
-    "github.com/gocolly/colly"
-    "strings"
-    "path"
-    "path/filepath"
-    "regexp"
-    "time"
-    md "github.com/JohannesKaufmann/html-to-markdown"
-    "github.com/JohannesKaufmann/html-to-markdown/plugin"
+	"fmt"
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/JohannesKaufmann/html-to-markdown/plugin"
+	"github.com/gocolly/colly"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 )
 
 func main() {

@@ -42,7 +42,7 @@ func parseCommissions() {
 
     // Documents en Latin
     c.OnHTML(".documento > .testo > .text > ul > li > a", func(e *colly.HTMLElement) {
-        if ("Latin" == e.Text) {
+        if "Latin" == e.Text {
             fmt.Println("Document latin:", e.Text)
             e.Request.Visit(e.Attr("href"))
         }
@@ -86,7 +86,7 @@ func parsePopes() {
     })
 
     c.OnHTML(".vaticanindex h2 a", func(e *colly.HTMLElement) {
-        if ("Latin" == e.Text) {
+        if "Latin" == e.Text {
             e.Request.Visit(e.Attr("href"))
         }
     })
@@ -99,7 +99,6 @@ func parsePopes() {
     // Parse all eleven previous popes :
     c.Visit(popes)
 }
-
 
 var (
     reName = regexp.MustCompile(`([0-9]{8})(.*)`)
@@ -129,7 +128,7 @@ func getCollector() *colly.Collector {
 func getConverter() *md.Converter {
     opt := &md.Options{
         CodeBlockStyle: "fenced", // default: indented
-        EmDelimiter: "*", // default: _
+        EmDelimiter:    "*",      // default: _
     }
     converter := md.NewConverter("", true, opt)
     converter.AddRules(getPunctuationRule())
@@ -140,14 +139,14 @@ func getConverter() *md.Converter {
 
 func getOriginalName(url string) string {
     // url example : https://www.vatican.va/content/leo-xiii/fr/letters/documents/hf_l-xiii_let_19010629_en-tout-temps.html
-    baseUrl   := path.Base(url) // hf_l-xiii_let_19010629_en-tout-temps.html
-    
+    baseUrl := path.Base(url) // hf_l-xiii_let_19010629_en-tout-temps.html
+
     return strings.TrimSuffix(baseUrl, filepath.Ext(baseUrl)) // hf_l-xiii_let_19010629_en-tout-temps
 }
 
 func getDocName(url string) string {
     matchedName := reName.FindStringSubmatch(getOriginalName(url))
-    if (2 > len(matchedName)) {
+    if 2 > len(matchedName) {
         return ""
     } else {
         return strings.Trim(matchedName[2], "-_")
@@ -156,9 +155,9 @@ func getDocName(url string) string {
 
 func getDocDate(url string) string {
     dateStringInURL := reDate.FindString(url)
-    if ("" != dateStringInURL) {
+    if "" != dateStringInURL {
         docDate, _ := time.Parse("20060102", dateStringInURL)
-        if ("0001-01-01" == docDate.Format("2006-01-02")) {
+        if "0001-01-01" == docDate.Format("2006-01-02") {
             docDate, _ = time.Parse("02012006", dateStringInURL)
         }
         return docDate.Format("2006-01-02")
@@ -169,20 +168,20 @@ func getDocDate(url string) string {
 
 func getFileName(url string) string {
     ext := ".md"
-    if (strings.Contains(url, "/la/")) {
+    if strings.Contains(url, "/la/") {
         ext = ".latin.md"
     }
 
     docName := getDocName(url)
     docDate := getDocDate(url)
 
-    if ("" == docName && "" == docDate) {
+    if "" == docName && "" == docDate {
         return getOriginalName(url) + ext
     }
-    if ("" == docName) {
+    if "" == docName {
         return docDate + ext
     }
-    if ("" == docDate) {
+    if "" == docDate {
         return docName + ext
     }
 

@@ -14,16 +14,45 @@ import (
 )
 
 func main() {
-    // parsePopes()
-    parseCommissions()
+    mainPath := os.Args[1]
+    parsePopes(mainPath)
+    // parseCommissions(mainPath)
+    // parsePorteLatine(mainPath)
+    parseCTI(mainPath)
 }
 
-func parseCommissions() {
+func parsePorteLatine(mainPath string) {
+    c := getCollector()
+    c.AllowedDomains = []string{"laportelatine.org", "www.laportelatine.org"}
+    // c.URLFilters =
+
+    // Parcourir tous les papes
+    c.OnHTML(".elementor-element-b383474 .elementor-widget-container a.e-add-post-image", func(e *colly.HTMLElement) {
+        fmt.Println("Pape:", strings.TrimSpace(e.Text))
+        e.Request.Visit(e.Attr("href"))
+    })
+
+    // Parcourir tous les documents
+    c.OnHTML("article.e-add-post a.e-add-link", func(e *colly.HTMLElement) {
+        fmt.Println("Pape:", strings.TrimSpace(e.Text))
+        e.Request.Visit(e.Attr("href"))
+    })
+
+    // Parcourir un document
+    converter := getConverter()
+    c.OnHTML(" .post", func(e *colly.HTMLElement) {
+        saveFile(mainPath, e.Request.URL.String(), converter.Convert(e.DOM))
+    })
+
+    c.Visit(porteLatine)
+}
+
+func parseCommissions(mainPath string) {
     c := getCollector()
     c.AllowedDomains = []string{"vatican.va", "www.vatican.va"}
 
     // Parcourir tous les dicastères
-    c.OnHTML("#accordionmenu a" , func(e *colly.HTMLElement) {
+    c.OnHTML("#accordionmenu a", func(e *colly.HTMLElement) {
         // fmt.Println("Dicastère:", strings.TrimSpace(e.Text))
         e.Request.Visit(e.Attr("href"))
     })
@@ -56,7 +85,39 @@ func parseCommissions() {
     c.Visit(curie)
 }
 
-func parsePopes() {
+func parseCTI(mainPath string) {
+    c := getCollector()
+    c.AllowedDomains = []string{"vatican.va", "www.vatican.va"}
+
+    // Page listant les "Documents"
+    c.OnHTML(".documenti h2 > a", func(e *colly.HTMLElement) {
+        e.Request.Visit(e.Attr("href"))
+    })
+
+    // Documents en Français
+    c.OnHTML("#corpo tr > td > ul > li b > a", func(e *colly.HTMLElement) {
+        // docUrl          := e.Request.URL.String()
+        fmt.Println("Document:", e.Text)
+        e.Request.Visit(e.Attr("href"))
+    })
+
+    // Documents en Latin
+    c.OnHTML("#corpo tr > td > ul > li b > a", func(e *colly.HTMLElement) {
+        if "Latin" == e.Text {
+            fmt.Println("Document latin:", e.Text)
+            e.Request.Visit(e.Attr("href"))
+        }
+    })
+
+    converter := getConverter()
+    c.OnHTML("body > table:nth-child(3)", func(e *colly.HTMLElement) {
+        saveFile(mainPath, e.Request.URL.String(), converter.Convert(e.DOM))
+    })
+
+    c.Visit(cti)
+}
+
+func parsePopes(mainPath string) {
     c := getCollector()
     c.AllowedDomains = []string{"vatican.va", "www.vatican.va"}
 
@@ -107,8 +168,11 @@ var (
     // 3 : _
     // 4 : doc name
     reDate = regexp.MustCompile(`([0-9]{8})`)
-    popes = "https://www.vatican.va/holy_father/index_fr.htm"
-    curie = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
+    //popes = "https://www.vatican.va/holy_father/index_fr.htm"
+    popes       = "https://www.vatican.va/content/vatican/en/holy-father.index.html#holy-father" // mieux !
+    curie       = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
+    cti         = "https://www.vatican.va/roman_curia/congregations/cfaith/cti_documents/rc_cti_index-doc-pubbl_fr.html"
+    porteLatine = "https://laportelatine.org/formation/magistere"
 )
 
 func getCollector() *colly.Collector {
@@ -189,6 +253,9 @@ func getFileName(url string) string {
 }
 
 func getFilePath(docUrl string) string {
+    if strings.Contains(docUrl, "cti_documents") {
+        return "cti/"
+    }
     cleanedPath := strings.TrimSuffix(path.Dir(docUrl), "documents")
     cleanedPath = strings.Replace(cleanedPath, "/fr/", "/", 1)
     cleanedPath = strings.Replace(cleanedPath, "/la/", "/", 1)

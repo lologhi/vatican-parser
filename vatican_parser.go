@@ -50,16 +50,7 @@ func parseCommissions() {
 
     converter := getConverter()
     c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
-        docUrl          := e.Request.URL.String()
-        docContent      := converter.Convert(e.DOM)
-
-        fileName := getFileName(docUrl) // 1901-06-29-en-tout-temps.md
-        filePath := getFilePath(docUrl) // leo-xiii/fr/letters/documents
-        os.MkdirAll(filePath, 0750)
-        // fmt.Println("fileName: ", fileName)
-        if err := os.WriteFile(filepath.Join(filePath, fileName), []byte(docContent), 0666); err != nil {
-            fmt.Println(err)
-        }
+        saveFile(mainPath, e.Request.URL.String(), converter.Convert(e.DOM))
     })
 
     c.Visit(curie)
@@ -102,16 +93,7 @@ func parsePopes() {
 
     converter := getConverter()
     c.OnHTML(".documento .testo", func(e *colly.HTMLElement) {
-        docUrl          := e.Request.URL.String()
-        docContent      := converter.Convert(e.DOM)
-
-        fileName := getFileName(docUrl) // 1901-06-29-en-tout-temps.md
-        filePath := getFilePath(docUrl) // leo-xiii/fr/letters/documents
-        os.MkdirAll(filePath, 0750)
-        // fmt.Println("fileName: ", fileName)
-        if err := os.WriteFile(filepath.Join(filePath, fileName), []byte(docContent), 0666); err != nil {
-            fmt.Println(err)
-        }
+        saveFile(mainPath, e.Request.URL.String(), converter.Convert(e.DOM))
     })
 
     // Parse all eleven previous popes :
@@ -212,4 +194,14 @@ func getFilePath(docUrl string) string {
     cleanedPath = strings.Replace(cleanedPath, "/fr/", "/", 1)
     cleanedPath = strings.Replace(cleanedPath, "/la/", "/", 1)
     return strings.TrimPrefix(cleanedPath, "https:/www.vatican.va/content/")
+}
+
+func saveFile(mainPath string, docUrl string, docContent string) {
+    fileName := getFileName(docUrl) // 1901-06-29-en-tout-temps.md
+    filePath := getFilePath(docUrl) // leo-xiii/fr/letters/documents
+    os.MkdirAll(filePath, 0750)
+    // fmt.Println("fileName: ", fileName)
+    if err := os.WriteFile(filepath.Join(mainPath, filePath, fileName), []byte(docContent), 0666); err != nil {
+        fmt.Println(err)
+    }
 }

@@ -263,11 +263,14 @@ func getFilePath(docUrl string) string {
 }
 
 func saveFile(mainPath string, docUrl string, docContent string) {
-	fileName := getFileName(docUrl) // 1901-06-29-en-tout-temps.md
-	filePath := getFilePath(docUrl) // leo-xiii/fr/letters/documents
-	os.MkdirAll(filePath, 0750)
-	// fmt.Println("fileName: ", fileName)
-	if err := os.WriteFile(filepath.Join(mainPath, filePath, fileName), []byte(docContent), 0666); err != nil {
+	fileName := getFileName(docUrl)                          // 1901-06-29-en-tout-temps.md
+	filePath := filepath.Join(mainPath, getFilePath(docUrl)) // ../test/ + leo-xiii/fr/letters/documents
+
+	err := os.MkdirAll(filePath, 0750)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if err := os.WriteFile(filepath.Join(filePath, fileName), []byte(docContent), 0666); err != nil {
 		fmt.Println(err)
 	}
 }

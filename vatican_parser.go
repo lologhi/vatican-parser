@@ -13,6 +13,20 @@ import (
 	"time"
 )
 
+var (
+	reName = regexp.MustCompile(`([0-9]{8})(.*)`)
+	// 1 : pope name and doc type (skipped as already in the path)
+	// 2 : doc date
+	// 3 : _
+	// 4 : doc name
+	reDate = regexp.MustCompile(`([0-9]{8})`)
+	popes  = "https://www.vatican.va/holy_father/index_fr.htm"
+	// popes       = "https://www.vatican.va/content/vatican/en/holy-father.index.html#holy-father" // mieux !
+	curie       = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
+	cti         = "https://www.vatican.va/roman_curia/congregations/cfaith/cti_documents/rc_cti_index-doc-pubbl_fr.html"
+	porteLatine = "https://laportelatine.org/formation/magistere"
+)
+
 func main() {
     mainPath := os.Args[1]
     parsePopes(mainPath)
@@ -160,20 +174,6 @@ func parsePopes(mainPath string) {
     // Parse all eleven previous popes :
     c.Visit(popes)
 }
-
-var (
-    reName = regexp.MustCompile(`([0-9]{8})(.*)`)
-    // 1 : pope name and doc type (skipped as already in the path)
-    // 2 : doc date
-    // 3 : _
-    // 4 : doc name
-    reDate = regexp.MustCompile(`([0-9]{8})`)
-    //popes = "https://www.vatican.va/holy_father/index_fr.htm"
-    popes       = "https://www.vatican.va/content/vatican/en/holy-father.index.html#holy-father" // mieux !
-    curie       = "https://www.vatican.va/content/romancuria/fr/segreteria-di-stato/segreteria-di-stato.index.html"
-    cti         = "https://www.vatican.va/roman_curia/congregations/cfaith/cti_documents/rc_cti_index-doc-pubbl_fr.html"
-    porteLatine = "https://laportelatine.org/formation/magistere"
-)
 
 func getCollector() *colly.Collector {
     c := colly.NewCollector()

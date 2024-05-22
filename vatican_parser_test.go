@@ -93,30 +93,31 @@ func TestGetFileNameWithoutDateInUrl(t *testing.T) {
 
 func TestGetFilePath(t *testing.T) {
 	url := "https://www.vatican.va/content/francesco/fr/travels/2013/documents/papa-francesco-programma-gmg-rio-de-janeiro-2013.html"
-	want := "francesco/travels/2013/"
-	msg := getFilePath(url)
+	mainPath := "/download/vatican/"
+	want := "/download/vatican/francesco/travels/2013"
+	msg := getFilePath(mainPath, url)
 	if want != msg {
-		t.Fatalf(`getFilePath("%q") returned %q, want match for %#q`, url, msg, want)
+		t.Fatalf(`getFilePath(%q, %q) returned %q, want match for %#q`, mainPath, url, msg, want)
 	}
 
 	url = "https://www.vatican.va/content/benedict-xv/fr/letters/1921/documents/hf_ben-xv_let_19210124_la-singolare.html"
-	want = "benedict-xv/letters/1921/"
-	msg = getFilePath(url)
+	want = "/download/vatican/benedict-xv/letters/1921"
+	msg = getFilePath(mainPath, url)
 	if want != msg {
-		t.Fatalf(`getFilePath("%q") returned %q, want match for %#q`, url, msg, want)
+		t.Fatalf(`getFilePath(%q, %q) returned %q, want match for %#q`, mainPath, url, msg, want)
 	}
 
 	url = "https://www.vatican.va/content/john-xxiii/la/apost_constitutions/1962/documents/hf_j-xxiii_apc_19620222_veterum-sapientia.html"
-	want = "john-xxiii/apost_constitutions/1962/"
-	msg = getFilePath(url)
+	want = "/download/vatican/john-xxiii/apost_constitutions/1962"
+	msg = getFilePath(mainPath, url)
 	if want != msg {
-		t.Fatalf(`getFilePath("%q") returned %q, want match for %#q`, url, msg, want)
+		t.Fatalf(`getFilePath(%q, %q) returned %q, want match for %#q`, mainPath, url, msg, want)
 	}
 
 	url = "https://www.vatican.va/roman_curia/congregations/cfaith/cti_documents/rc_con_cfaith_doc_20040723_communion-stewardship_fr.html"
 	want = "cti/"
-	msg = getFilePath(url)
+	msg = getFilePath(mainPath, url)
 	if want != msg {
-		t.Fatalf(`getFilePath("%q") returned %q, want match for %#q`, url, msg, want)
+		t.Fatalf(`getFilePath(%q, %q) returned %q, want match for %#q`, mainPath, url, msg, want)
 	}
 }

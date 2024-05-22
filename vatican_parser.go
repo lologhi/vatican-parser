@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/JohannesKaufmann/html-to-markdown/plugin"
@@ -252,25 +253,34 @@ func getFileName(url string) string {
 	return docDate + "-" + docName + ext
 }
 
-func getFilePath(docUrl string) string {
+func getFilePath(mainPath string, docUrl string) string {
 	if strings.Contains(docUrl, "cti_documents") {
 		return "cti/"
 	}
 	cleanedPath := strings.TrimSuffix(path.Dir(docUrl), "documents")
 	cleanedPath = strings.Replace(cleanedPath, "/fr/", "/", 1)
 	cleanedPath = strings.Replace(cleanedPath, "/la/", "/", 1)
-	return strings.TrimPrefix(cleanedPath, "https:/www.vatican.va/content/")
+	cleanedPath = strings.TrimPrefix(cleanedPath, "https:/www.vatican.va/content/")
+
+	return filepath.Join(mainPath, cleanedPath)
 }
 
 func saveFile(mainPath string, docUrl string, docContent string) {
-	fileName := getFileName(docUrl)                          // 1901-06-29-en-tout-temps.md
-	filePath := filepath.Join(mainPath, getFilePath(docUrl)) // ../test/ + leo-xiii/fr/letters/documents
+	fileName := getFileName(docUrl)           // 1901-06-29-en-tout-temps.md
+	filePath := getFilePath(mainPath, docUrl) // ../test/ + leo-xiii/fr/letters/documents
 
 	err := os.MkdirAll(filePath, 0750)
 	if err != nil {
 		fmt.Println(err)
 	}
-	if err := os.WriteFile(filepath.Join(filePath, fileName), []byte(docContent), 0666); err != nil {
-		fmt.Println(err)
+
+	pathAndName := filepath.Join(filePath, fileName)
+
+	if _, err := os.Stat(pathAndName); errors.Is(err, os.ErrNotExist) {
+		if err := os.WriteFile(pathAndName, []byte(docContent), 0666); err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		//file existed already
 	}
 }
